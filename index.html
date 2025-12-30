@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>West End Walking Guide</title>
+    <style>
+        :root { --gold: #d4af37; --velvet: #800020; --bg: #121212; --card: #1e1e1e; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); color: white; margin: 0; padding-bottom: 50px; }
+        header { background: #000; padding: 25px 15px; text-align: center; border-bottom: 2px solid var(--gold); sticky; top: 0; z-index: 10; }
+        h1 { margin: 0; font-size: 1.4rem; color: var(--gold); letter-spacing: 1px; }
+        .search-box { padding: 15px; position: sticky; top: 75px; background: var(--bg); z-index: 9; }
+        input { width: 100%; padding: 15px; border-radius: 10px; border: none; background: var(--card); color: white; font-size: 16px; box-sizing: border-box; }
+        .list { padding: 0 15px; }
+        .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; border-left: 4px solid var(--gold); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .info { flex: 1; }
+        .n { font-weight: bold; font-size: 1.1rem; margin-bottom: 4px; display: block; }
+        .s { color: var(--gold); font-style: italic; display: block; font-size: 0.95rem; }
+        .a { color: #888; font-size: 0.8rem; margin-top: 4px; display: block; }
+        .btn { background: var(--velvet); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 20px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+<header><h1>West End Explorer</h1></header>
+
+<div class="search-box">
+    <input type="text" id="find" placeholder="Search show or theatre..." onkeyup="search()">
+</div>
+
+<div class="list" id="list"></div>
+
+<script>
+const data = [
+    {n: "Victoria Palace", s: "Hamilton", a: "Victoria St, SW1E 5EA"},
+    {n: "Apollo Victoria", s: "Wicked", a: "17 Wilton Rd, SW1V 1LG"},
+    {n: "Trafalgar Theatre", s: "Oh, Mary!", a: "14 Whitehall, SW1A 2DY"},
+    {n: "Theatre Royal Haymarket", s: "Othello", a: "Haymarket, SW1Y 4HT"},
+    {n: "His Majesty's", s: "Phantom of the Opera", a: "Haymarket, SW1Y 4QL"},
+    {n: "Harold Pinter", s: "High Noon", a: "Panton St, SW1Y 4DN"},
+    {n: "Criterion Theatre", s: "Titanique", a: "Piccadilly Circus, W1V 9LB"},
+    {n: "Piccadilly Theatre", s: "Moulin Rouge!", a: "16 Denman St, W1D 7DY"},
+    {n: "Prince of Wales", s: "The Book of Mormon", a: "Coventry St, W1D 6AS"},
+    {n: "Wyndham's Theatre", s: "All My Sons", a: "Charing Cross Rd, WC2H 0DA"},
+    {n: "Noël Coward", s: "The Importance of Being Earnest", a: "St Martin's Ln, WC2N 4AU"},
+    {n: "Duke of York's", s: "Woman in Mind", a: "St Martin's Ln, WC2N 4BG"},
+    {n: "Garrick Theatre", s: "The Producers", a: "2 Charing Cross Rd, WC2H 0HH"},
+    {n: "Lyric Theatre", s: "Hadestown", a: "29 Shaftesbury Ave, W1D 7ES"},
+    {n: "Apollo Theatre", s: "Christmas Carol Goes Wrong", a: "Shaftesbury Ave, W1D 7EZ"},
+    {n: "Gielgud Theatre", s: "Oliver!", a: "Shaftesbury Ave, W1D 6AR"},
+    {n: "Sondheim Theatre", s: "Les Misérables", a: "51 Shaftesbury Ave, W1D 6BA"},
+    {n: "Palace Theatre", s: "Harry Potter", a: "Shaftesbury Ave, W1D 5AY"},
+    {n: "Shaftesbury Theatre", s: "Just For One Day", a: "210 Shaftesbury Ave, WC2H 8DP"},
+    {n: "Phoenix Theatre", s: "Stranger Things", a: "Charing Cross Rd, WC2H 0JP"},
+    {n: "Dominion Theatre", s: "The Devil Wears Prada", a: "268 Tottenham Ct Rd, W1T 7AQ"},
+    {n: "Cambridge Theatre", s: "Matilda", a: "Earlham St, WC2H 9HU"},
+    {n: "St. Martin's", s: "The Mousetrap", a: "West St, WC2H 9NZ"},
+    {n: "Ambassadors", s: "Paranormal Activity", a: "West St, WC2H 9ND"},
+    {n: "Arts Theatre", s: "The Choir of Man", a: "6 Great Newport St, WC2H 7JB"},
+    {n: "Gillian Lynne", s: "My Neighbour Totoro", a: "166 Drury Ln, WC2B 5PW"},
+    {n: "Theatre Royal Drury Lane", s: "Hercules", a: "Catherine St, WC2B 5JF"},
+    {n: "Fortune Theatre", s: "Operation Mincemeat", a: "Russell St, WC2B 5HH"},
+    {n: "Lyceum Theatre", s: "The Lion King", a: "21 Wellington St, WC2E 7RQ"},
+    {n: "Novello Theatre", s: "Mamma Mia!", a: "Aldwych, WC2B 4LD"},
+    {n: "Aldwych Theatre", s: "Elf The Musical", a: "49 Aldwych, WC2B 4DF"},
+    {n: "Duchess Theatre", s: "The Play That Goes Wrong", a: "3 Catherine St, WC2B 5LA"},
+    {n: "Adelphi Theatre", s: "Back to the Future", a: "Strand, WC2E 7NA"},
+    {n: "Vaudeville", s: "SIX", a: "404 Strand, WC2R 0NH"},
+    {n: "Savoy Theatre", s: "Paddington", a: "Strand, WC2R 0ET"},
+    {n: "Playhouse Theatre", s: "Cabaret", a: "Northumberland Ave, WC2N 5DE"},
+    {n: "London Coliseum", s: "ENO Productions", a: "St Martin's Ln, WC2N 4ES"},
+    {n: "Prince Edward", s: "MJ The Musical", a: "Old Compton St, W1D 4HS"},
+    {n: "London Palladium", s: "Waiting for Godot", a: "8 Argyll St, W1F 7TF"}
+];
+
+function ui(items) {
+    document.getElementById('list').innerHTML = items.map(i => `
+        <div class="card">
+            <div class="info">
+                <span class="n">${i.n}</span>
+                <span class="s">🎭 ${i.s}</span>
+                <span class="a">📍 ${i.a}</span>
+            </div>
+            <a class="btn" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(i.n + ' ' + i.a)}">📍</a>
+        </div>
+    `).join('');
+}
+
+function search() {
+    const q = document.getElementById('find').value.toLowerCase();
+    ui(data.filter(i => i.n.toLowerCase().includes(q) || i.s.toLowerCase().includes(q)));
+}
+
+ui(data);
+</script>
+</body>
+</html>
