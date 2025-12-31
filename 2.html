@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>West End Pro</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root { --gold: #d4af37; --velvet: #800020; --bg: #121212; --card: #1e1e1e; --tab-bg: #1a1a1a; }
+        body { font-family: -apple-system, system-ui; background: var(--bg); color: white; margin: 0; height: 100vh; overflow: hidden; }
+        
+        /* Layout */
+        header { background: #000; padding: 15px; text-align: center; border-bottom: 1px solid #333; height: 60px; box-sizing: border-box; }
+        h1 { margin: 0; font-size: 1.1rem; color: var(--gold); letter-spacing: 1px; }
+        
+        #content { height: calc(100vh - 120px); overflow-y: auto; position: relative; }
+        #map { height: 100%; width: 100%; display: none; } /* Hidden by default */
+        
+        /* List Styles */
+        .search-box { padding: 10px; background: var(--bg); position: sticky; top: 0; z-index: 10; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--card); color: white; font-size: 16px; box-sizing: border-box; }
+        .list { padding: 10px; }
+        .card { background: var(--card); border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; border-left: 4px solid var(--gold); }
+        .info { flex: 1; }
+        .n { font-weight: bold; display: block; }
+        .s { color: var(--gold); font-size: 0.9rem; font-style: italic; }
+        .dist { font-size: 0.7rem; color: #888; margin-top: 4px; display: block; }
+        
+        /* Tab Bar */
+        .tab-bar { height: 60px; background: var(--tab-bg); border-top: 1px solid #333; display: flex; position: fixed; bottom: 0; width: 100%; }
+        .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; font-size: 0.7rem; text-decoration: none; border: none; background: none; }
+        .tab.active { color: var(--gold); }
+        .tab-icon { font-size: 1.4rem; margin-bottom: 2px; }
+
+        /* Map Marker Customization */
+        .leaflet-popup-content-wrapper { background: var(--card); color: white; border: 1px solid var(--gold); }
+        .leaflet-popup-tip { background: var(--gold); }
+    </style>
+</head>
+<body>
+
+<header><h1>West End Explorer</h1></header>
+
+<div id="content">
+    <div id="listView">
+        <div class="search-box">
+            <input type="text" id="find" placeholder="Search show or theatre..." onkeyup="search()">
+        </div>
+        <div class="list" id="list"></div>
+    </div>
+    <div id="map"></div>
+</div>
+
+<nav class="tab-bar">
+    <button class="tab active" id="listBtn" onclick="showTab('list')">
+        <span class="tab-icon">📜</span><span>List</span>
+    </button>
+    <button class="tab" id="mapBtn" onclick="showTab('map')">
+        <span class="tab-icon">🗺️</span><span>Map</span>
+    </button>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const data = [
+    {n: "Victoria Palace", s: "Hamilton", a: "Victoria St", lat: 51.4968, lon: -0.1420},
+    {n: "Apollo Victoria", s: "Wicked", a: "Wilton Rd", lat: 51.4958, lon: -0.1427},
+    {n: "Trafalgar Theatre", s: "Oh, Mary!", a: "Whitehall", lat: 51.5068, lon: -0.1274},
+    {n: "Theatre Royal Haymarket", s: "Othello", a: "Haymarket", lat: 51.5084, lon: -0.1314},
+    {n: "His Majesty's", s: "Phantom", a: "Haymarket", lat: 51.5082, lon: -0.1318},
+    {n: "Sondheim Theatre", s: "Les Misérables", a: "Shaftesbury Ave", lat: 51.5117, lon: -0.1325},
+    {n: "Palace Theatre", s: "Harry Potter", a: "Shaftesbury Ave", lat: 51.5131, lon: -0.1299},
+    {n: "Lyceum Theatre", s: "The Lion King", a: "Wellington St", lat: 51.5116, lon: -0.1199},
+    {n: "Adelphi Theatre", s: "Back to the Future", a: "Strand", lat: 51.5099, lon: -0.1227},
+    {n: "Novello Theatre", s: "Mamma Mia!", a: "Aldwych", lat: 51.5122, lon: -0.1189}
+];
+
+let map, userMarker, markers = [];
+
+// Tab Switching Logic
+function showTab(tab) {
+    document.getElementById('listView').style.display = tab === 'list' ? 'block' : 'none';
+    document.getElementById('map').style.display = tab === 'map' ? 'block' : 'none';
+    document.getElementById('listBtn').classList.toggle('active', tab === 'list');
+    document.getElementById('mapBtn').classList.toggle('active', tab === 'map');
+    
+    if (tab === 'map') {
+        setTimeout(() => { 
+            map.invalidateSize(); 
+            getLocation(); // Auto-center map on user when switching
+        }, 100);
+    }
+}
+
+// Map Initialization
+function initMap() {
+    map = L.map('map').setView([51.51, -0.13], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    data.forEach(t => {
+        const m = L.marker([t.lat, t.lon]).addTo(map)
+            .bindPopup(`<b>${t.n}</b><br><i style="color:var(--gold)">${t.s}</i>`);
+        markers.push(m);
+    });
+}
+
+function ui(items) {
+    document.getElementById('list').innerHTML = items.map(i => `
+        <div class="card">
+            <div class="info">
+                <span class="n">${i.n}</span>
+                <span class="s">🎭 ${i.s}</span>
+                ${i.d ? `<span class="dist">${i.d.toFixed(2)} km away</span>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const {latitude, longitude} = pos.coords;
+            
+            // Update List Distances
+            data.forEach(t => {
+                const R = 6371;
+                const dLat = (t.lat-latitude) * Math.PI/180;
+                const dLon = (t.lon-longitude) * Math.PI/180;
+                const a = Math.sin(dLat/2)**2 + Math.cos(latitude*Math.PI/180)*Math.cos(t.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+                t.d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            });
+            data.sort((a,b) => a.d - b.d);
+            ui(data);
+
+            // Update Map User Location
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.circleMarker([latitude, longitude], {
+                color: '#3498db', radius: 8, fillOpacity: 0.8
+            }).addTo(map).bindPopup("You are here");
+            
+            if (document.getElementById('map').style.display === 'block') {
+                map.setView([latitude, longitude], 15);
+            }
+        });
+    }
+}
+
+function search() {
+    const q = document.getElementById('find').value.toLowerCase();
+    ui(data.filter(i => i.n.toLowerCase().includes(q) || i.s.toLowerCase().includes(q)));
+}
+
+initMap();
+ui(data);
+// Track position every 30 seconds
+setInterval(getLocation, 30000); 
+getLocation();
+</script>
+</body>
+</html>
