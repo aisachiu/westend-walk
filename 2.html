@@ -63,17 +63,63 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const data = [
+    // SECTION 1: VICTORIA
     {n: "Victoria Palace", s: "Hamilton", a: "Victoria St", lat: 51.4968, lon: -0.1420},
-    {n: "Apollo Victoria", s: "Wicked", a: "Wilton Rd", lat: 51.4958, lon: -0.1427},
-    {n: "Trafalgar Theatre", s: "Oh, Mary!", a: "Whitehall", lat: 51.5068, lon: -0.1274},
+    {n: "Apollo Victoria", s: "Wicked", a: "17 Wilton Rd", lat: 51.4958, lon: -0.1427},
+    
+    // SECTION 2: ST JAMES'S & HAYMARKET
+    {n: "Trafalgar Theatre", s: "Oh, Mary!", a: "14 Whitehall", lat: 51.5068, lon: -0.1274},
     {n: "Theatre Royal Haymarket", s: "Othello", a: "Haymarket", lat: 51.5084, lon: -0.1314},
-    {n: "His Majesty's", s: "Phantom", a: "Haymarket", lat: 51.5082, lon: -0.1318},
-    {n: "Sondheim Theatre", s: "Les Misérables", a: "Shaftesbury Ave", lat: 51.5117, lon: -0.1325},
+    {n: "His Majesty's", s: "Phantom of the Opera", a: "Haymarket", lat: 51.5082, lon: -0.1318},
+    {n: "Harold Pinter Theatre", s: "High Noon", a: "Panton St", lat: 51.5101, lon: -0.1312},
+    {n: "Criterion Theatre", s: "Titanique", a: "218 Piccadilly", lat: 51.5101, lon: -0.1338},
+
+    // SECTION 3: PICCADILLY & LEICESTER SQ
+    {n: "Piccadilly Theatre", s: "Moulin Rouge!", a: "16 Denman St", lat: 51.5111, lon: -0.1345},
+    {n: "Prince of Wales", s: "The Book of Mormon", a: "Coventry St", lat: 51.5104, lon: -0.1318},
+    {n: "Wyndham's Theatre", s: "All My Sons", a: "Charing Cross Rd", lat: 51.5116, lon: -0.1283},
+    {n: "Noël Coward Theatre", s: "The Importance of Being Earnest", a: "St Martin's Ln", lat: 51.5109, lon: -0.1278},
+    {n: "Duke of York's", s: "Woman in Mind", a: "St Martin's Ln", lat: 51.5105, lon: -0.1276},
+    {n: "Garrick Theatre", s: "The Producers", a: "2 Charing Cross Rd", lat: 51.5098, lon: -0.1276},
+    {n: "London Coliseum", s: "ENO / Seasonal", a: "St Martin's Ln", lat: 51.5099, lon: -0.1264},
+
+    // SECTION 4: SHAFTESBURY AVENUE
+    {n: "Lyric Theatre", s: "Hadestown", a: "29 Shaftesbury Ave", lat: 51.5112, lon: -0.1331},
+    {n: "Apollo Theatre", s: "Christmas Carol Goes Wrong", a: "Shaftesbury Ave", lat: 51.5114, lon: -0.1329},
+    {n: "Gielgud Theatre", s: "Oliver!", a: "Shaftesbury Ave", lat: 51.5116, lon: -0.1325},
+    {n: "Sondheim Theatre", s: "Les Misérables", a: "51 Shaftesbury Ave", lat: 51.5117, lon: -0.1325},
     {n: "Palace Theatre", s: "Harry Potter", a: "Shaftesbury Ave", lat: 51.5131, lon: -0.1299},
+    {n: "Shaftesbury Theatre", s: "Just For One Day", a: "210 Shaftesbury Ave", lat: 51.5161, lon: -0.1263},
+
+    // SECTION 5: CHARING CROSS & SOHO
+    {n: "Phoenix Theatre", s: "Stranger Things", a: "Charing Cross Rd", lat: 51.5147, lon: -0.1292},
+    {n: "Dominion Theatre", s: "The Devil Wears Prada", a: "Tottenham Ct Rd", lat: 51.5165, lon: -0.1298},
+    {n: "Prince Edward", s: "MJ The Musical", a: "Old Compton St", lat: 51.5135, lon: -0.1305},
+    {n: "London Palladium", s: "Waiting for Godot", a: "8 Argyll St", lat: 51.5145, lon: -0.1402},
+    {n: "@sohoplace", s: "Spy Who Came In From The Cold", a: "4 Soho Pl", lat: 51.5159, lon: -0.1302},
+
+    // SECTION 6: SEVEN DIALS & DRURY LANE
+    {n: "Cambridge Theatre", s: "Matilda", a: "Earlham St", lat: 51.5135, lon: -0.1266},
+    {n: "St. Martin's Theatre", s: "The Mousetrap", a: "West St", lat: 51.5139, lon: -0.1276},
+    {n: "Ambassadors", s: "Paranormal Activity", a: "West St", lat: 51.5137, lon: -0.1275},
+    {n: "Arts Theatre", s: "The Choir of Man", a: "Great Newport St", lat: 51.5122, lon: -0.1276},
+    {n: "Gillian Lynne", s: "My Neighbour Totoro", a: "166 Drury Ln", lat: 51.5150, lon: -0.1229},
+    {n: "Theatre Royal Drury Lane", s: "Hercules", a: "Catherine St", lat: 51.5125, lon: -0.1206},
+    {n: "Fortune Theatre", s: "Operation Mincemeat", a: "Russell St", lat: 51.5126, lon: -0.1213},
+
+    // SECTION 7: COVENT GARDEN & ALDWYCH
     {n: "Lyceum Theatre", s: "The Lion King", a: "Wellington St", lat: 51.5116, lon: -0.1199},
+    {n: "Novello Theatre", s: "Mamma Mia!", a: "Aldwych", lat: 51.5122, lon: -0.1189},
+    {n: "Aldwych Theatre", s: "Elf The Musical", a: "49 Aldwych", lat: 51.5126, lon: -0.1182},
+    {n: "Duchess Theatre", s: "The Play That Goes Wrong", a: "Catherine St", lat: 51.5120, lon: -0.1201},
+
+    // SECTION 8: THE STRAND & EMBANKMENT
     {n: "Adelphi Theatre", s: "Back to the Future", a: "Strand", lat: 51.5099, lon: -0.1227},
-    {n: "Novello Theatre", s: "Mamma Mia!", a: "Aldwych", lat: 51.5122, lon: -0.1189}
+    {n: "Vaudeville", s: "SIX", a: "404 Strand", lat: 51.5101, lon: -0.1219},
+    {n: "Savoy Theatre", s: "Paddington", a: "Strand", lat: 51.5103, lon: -0.1203},
+    {n: "Playhouse Theatre", s: "Cabaret", a: "Northumberland Ave", lat: 51.5071, lon: -0.1242}
 ];
+
 
 let map, userMarker, markers = [];
 
